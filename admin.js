@@ -14,9 +14,10 @@ const btnLogout = document.getElementById("btnLogout");
 const secEmpresas = document.getElementById("secEmpresas");
 const secUsuarios = document.getElementById("secUsuarios");
 const secRelatorios = document.getElementById("secRelatorios");
+const empresaSelectContainer = document.getElementById("empresaSelectContainer");
 
 // Contexto do usuário logado
-const role = localStorage.getItem("role");
+let role = (localStorage.getItem("role") || "").toLowerCase();
 const empresaId = localStorage.getItem("empresaId");
 const nomeEmpresa = localStorage.getItem("nomeEmpresa");
 
@@ -26,12 +27,20 @@ if (role === "superadmin") {
   secEmpresas.style.display = "block";
   secUsuarios.style.display = "block";
   secRelatorios.style.display = "block";
+
+  // Mostra seletor de empresa para superadmin
+  empresaSelectContainer.style.display = "block";
+
   carregarEmpresasSelect("empresaUsuario");
   carregarEmpresasSelect("relatorioEmpresa");
+
 } else if (role === "admin_empresa") {
   secUsuarios.style.display = "block";
   secRelatorios.style.display = "block";
-  document.getElementById("empresaSelectContainer").style.display = "none";
+
+  // Admin de empresa não escolhe empresa
+  empresaSelectContainer.style.display = "none";
+
   const sel = document.getElementById("relatorioEmpresa");
   sel.innerHTML = `<option value="${empresaId}">${nomeEmpresa}</option>`;
 } else {
@@ -93,6 +102,7 @@ document.getElementById("formUsuario")?.addEventListener("submit", async (e) => 
       role: roleUsuario,
       empresaId: empresaUsuarioId,
       nomeEmpresa: role === "superadmin" ? await nomeEmpresaPorId(empresaUsuarioId) : nomeEmpresa,
+      ativo: true,
       criadoEm: Timestamp.now()
     });
 
@@ -155,6 +165,7 @@ async function carregarEmpresasSelect(selectId) {
 }
 
 async function nomeEmpresaPorId(id) {
+  if (!id) return "";
   const snap = await getDoc(doc(db, "empresas", id));
   return snap.exists() ? snap.data().nome : "";
 }
