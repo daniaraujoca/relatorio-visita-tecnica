@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Administrativo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header>
+    <h1>Painel Administrativo</h1>
+    <div class="user-info">
+      <span id="userRole"></span>
+      <button id="btnLogout">Sair</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Seção visível apenas para SUPERADMIN -->
+    <section id="secEmpresas" style="display:none;">
+      <h2>Cadastro de Empresas</h2>
+      <form id="formEmpresa">
+        <label for="nomeEmpresa">Nome da Empresa:</label>
+        <input type="text" id="nomeEmpresa" required>
+
+        <label for="cnpjEmpresa">CNPJ:</label>
+        <input type="text" id="cnpjEmpresa">
+
+        <button type="submit">Salvar Empresa</button>
+      </form>
+      <div id="listaEmpresas"></div>
+    </section>
+
+    <!-- Cadastro de usuários (técnicos/admins de empresa) -->
+    <section id="secUsuarios" style="display:none;">
+      <h2>Cadastro de Usuários</h2>
+      <form id="formUsuario">
+        <label for="nomeUsuario">Nome:</label>
+        <input type="text" id="nomeUsuario" required>
+
+        <label for="emailUsuario">E-mail:</label>
+        <input type="email" id="emailUsuario" required>
+
+        <label for="senhaUsuario">Senha:</label>
+        <input type="password" id="senhaUsuario" required>
+
+        <label for="roleUsuario">Função:</label>
+        <select id="roleUsuario" required>
+          <option value="">Selecione</option>
+          <option value="admin_empresa">Admin da Empresa</option>
+          <option value="tecnico">Técnico</option>
+        </select>
+
+        <!-- Apenas superadmin escolhe empresa -->
+        <div id="empresaSelectContainer" style="display:none;">
+          <label for="empresaUsuario">Empresa:</label>
+          <select id="empresaUsuario"></select>
+        </div>
+
+        <button type="submit">Salvar Usuário</button>
+      </form>
+      <div id="listaUsuarios"></div>
+    </section>
+
+    <!-- Relatórios -->
+    <section id="secRelatorios" style="display:none;">
+      <h2>Relatórios</h2>
+      <label for="relatorioEmpresa">Empresa:</label>
+      <select id="relatorioEmpresa"></select>
+
+      <label for="dataInicio">Data Início:</label>
+      <input type="date" id="dataInicio">
+
+      <label for="dataFim">Data Fim:</label>
+      <input type="date" id="dataFim">
+
+      <button id="btnGerarRelatorio">Gerar Relatório PDF</button>
+    </section>
+  </main>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

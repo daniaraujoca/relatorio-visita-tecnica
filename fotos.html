@@ -1,0 +1,47 @@
+<!-- fotos.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Fotos da Visita</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="fotos.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Registro Fotográfico</h2>
+
+    <form id="fotoForm">
+      <label for="foto">Foto da Instalação/Manutenção:</label>
+      <input type="file" id="foto" accept="image/*" capture="environment" required>
+      <small class="erro" id="erroFoto"></small>
+
+      <div class="dados-capa">
+        <label for="tipo">Tipo de Serviço:</label>
+        <input type="text" id="tipo" readonly>
+
+        <label for="local">Nome do Local:</label>
+        <input type="text" id="local" readonly>
+
+        <label for="tecnico">Nome do Técnico:</label>
+        <input type="text" id="tecnico" readonly>
+
+        <label for="endereco">Endereço:</label>
+        <input type="text" id="endereco" readonly>
+
+        <label for="dataHora">Data e Hora:</label>
+        <input type="text" id="dataHora" readonly>
+      </div>
+
+      <button type="submit" id="btnSalvarFoto">Salvar Foto</button>
+      <p id="mensagemSucesso" style="color:green; display:none;">✅ Foto salva com sucesso!</p>
+    </form>
+  </div>
+
+  <script type="module">
+    import { db } from './firebaseConfig.js';
+    import { initFotosForm } from './fotos.js';
+    initFotosForm(db);
+  </script>
+</body>
+</html>

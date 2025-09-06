@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Login do Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="admin-login.css">
+</head>
+<body>
+  <div class="login-container">
+    <h1>Acesso Administrativo</h1>
+
+    <form id="loginForm" novalidate>
+      <label for="email">E-mail</label>
+      <input id="email" type="email" placeholder="admin@empresa.com" required>
+
+      <label for="senha">Senha</label>
+      <input id="senha" type="password" placeholder="••••••••" required>
+
+      <button id="btnLogin" type="submit">Entrar</button>
+      <p id="erro" class="erro" aria-live="polite"></p>
+    </form>
+
+    <div class="ajuda">
+      <button id="btnReset">Esqueci minha senha</button>
+    </div>
+  </div>
+
+  <script type="module" src="admin-login.js"></script>
+</body>
+</html>

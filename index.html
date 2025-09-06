@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Capa da Visita Técnica</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="visita.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Capa da Visita Técnica</h1>
+
+    <form id="visitaForm">
+      <label for="fotoLocal">Foto do Local:</label>
+      <input type="file" id="fotoLocal" accept="image/*" capture="environment" required>
+      <small class="erro" id="erroFoto"></small>
+
+      <label for="tipoServico">Tipo de Serviço:</label>
+      <select id="tipoServico" required>
+        <option value="">Selecione</option>
+        <option value="Instalação">Instalação</option>
+        <option value="Manutenção">Manutenção</option>
+        <option value="Inspeção">Inspeção</option>
+      </select>
+      <small class="erro" id="erroTipo"></small>
+
+      <label for="nomeLocal">Nome do Local:</label>
+      <input type="text" id="nomeLocal" required>
+      <small class="erro" id="erroLocal"></small>
+
+      <label for="nomeTecnico">Nome do Técnico:</label>
+      <input type="text" id="nomeTecnico" required readonly>
+      <small class="erro" id="erroTecnico"></small>
+
+      <label for="endereco">Endereço:</label>
+      <input type="text" id="endereco" required>
+      <small class="erro" id="erroEndereco"></small>
+
+      <label for="dataHora">Data e Hora da Visita:</label>
+      <input type="datetime-local" id="dataHora" required readonly>
+      <small class="erro" id="erroData"></small>
+
+      <button type="submit" id="btnSalvar">Salvar e Avançar</button>
+      <p id="mensagemSucesso" style="color:green; display:none;">✅ Visita salva com sucesso!</p>
+    </form>
+  </div>
+
+  <script type="module">
+    import { db, auth } from "./firebaseConfig.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
+    import { initVisitaForm } from "./visita.js";
+
+    // Preenche automaticamente a data/hora atual
+    const campoDataHora = document.getElementById('dataHora');
+    const agora = new Date();
+    campoDataHora.value = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}T${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
+
+    // Nome do técnico logado
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById('nomeTecnico').value = user.displayName || user.email || "Técnico";
+        // Armazena infos essenciais (devem ser definidas no login)
+        // localStorage.empresaId, localStorage.usuarioId, localStorage.nomeEmpresa
+        if (!localStorage.getItem('usuarioId')) localStorage.setItem('usuarioId', user.uid);
+      }
+    });
+
+    // Inicializa lógica do formulário (Cloudinary + Firestore + PDF)
+    initVisitaForm(db);
+  </script>
+</body>
+</html>
