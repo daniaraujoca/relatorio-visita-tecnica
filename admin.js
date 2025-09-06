@@ -1,12 +1,8 @@
-import { auth, db } from "./firebaseConfig.js";
-import { signOut, createUserWithEmailAndPassword, getAuth } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
+import { auth, db, firebaseConfig } from "./firebaseConfig.js";
+import { signOut, createUserWithEmailAndPassword, getAuth, signOut as signOutAuth } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js";
 import { collection, addDoc, getDocs, doc, setDoc, query, where, Timestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js";
 import { gerarPDFVisita } from "./pdf-utils.js";
-
-// Cloudinary para PDFs
-const CLOUDINARY_CLOUD_NAME = "dehekhogh";
-const CLOUDINARY_PDF_PRESET = "visits_pdfs_unsigned";
-const CLOUDINARY_PDF_FOLDER = "visits_pdfs";
 
 // Elementos
 const userRoleSpan = document.getElementById("userRole");
@@ -27,20 +23,13 @@ if (role === "superadmin") {
   secEmpresas.style.display = "block";
   secUsuarios.style.display = "block";
   secRelatorios.style.display = "block";
-
-  // Mostra seletor de empresa para superadmin
   empresaSelectContainer.style.display = "block";
-
   carregarEmpresasSelect("empresaUsuario");
   carregarEmpresasSelect("relatorioEmpresa");
-
 } else if (role === "admin_empresa") {
   secUsuarios.style.display = "block";
   secRelatorios.style.display = "block";
-
-  // Admin de empresa não escolhe empresa
   empresaSelectContainer.style.display = "none";
-
   const sel = document.getElementById("relatorioEmpresa");
   sel.innerHTML = `<option value="${empresaId}">${nomeEmpresa}</option>`;
 } else {
@@ -91,11 +80,13 @@ document.getElementById("formUsuario")?.addEventListener("submit", async (e) => 
   }
 
   try {
-    // Cria usuário em app secundário para não derrubar sessão
-    const secondaryAuth = getAuth();
+    // Cria app secundário para não derrubar sessão do app principal
+    const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+    const secondaryAuth = getAuth(secondaryApp);
+
     const cred = await createUserWithEmailAndPassword(secondaryAuth, email, senha);
 
-    // Salva perfil no Firestore
+    // Salva perfil no Firestore usando o db do app principal
     await setDoc(doc(db, "usuarios", cred.user.uid), {
       nome,
       email,
@@ -105,6 +96,9 @@ document.getElementById("formUsuario")?.addEventListener("submit", async (e) => 
       ativo: true,
       criadoEm: Timestamp.now()
     });
+
+    // Encerra sessão do app secundário
+    await signOutAuth(secondaryAuth);
 
     alert("Usuário criado com sucesso.");
     e.target.reset();
