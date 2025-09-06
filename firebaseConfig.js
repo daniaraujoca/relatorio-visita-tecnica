@@ -5,19 +5,18 @@ import { initializeApp, getApp, getApps } from "https://www.gstatic.com/firebase
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
 
-// Configuração do seu projeto Firebase
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBliSebIXe22a3I_nyp8iy9dUIwOQVzTrw",
-  authDomain: "relatorio-visita-tecnica.firebaseapp.com",
-  projectId: "relatorio-visita-tecnica",
-  storageBucket: "relatorio-visita-tecnica.firebasestorage.app",
-  messagingSenderId: "246351178619",
-  appId: "1:246351178619:web:93ef3a2bb6473e766aabde",
-  measurementId: "G-W3LD87GW5C"
+  apiKey: "AIzaSyDl3MWTjqSf4T6l7Xb2pHozJpnkaMlnPZY",
+  authDomain: "relatorio-visita-tecnica2025.firebaseapp.com",
+  projectId: "relatorio-visita-tecnica2025",
+  storageBucket: "relatorio-visita-tecnica2025.firebasestorage.app",
+  messagingSenderId: "823053045465",
+  appId: "1:823053045465:web:ccb6c4a0aa1dee303cb8c8"
 };
 
-// Evita inicializar mais de uma vez
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
 // Exporta para uso nos outros arquivos
 export const db = getFirestore(app);
