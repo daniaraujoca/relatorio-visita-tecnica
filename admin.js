@@ -238,6 +238,8 @@ document.getElementById("btnGerarRelatorio").addEventListener("click", async () 
     const pdfBlob = docPDF.output("blob");
     const filename = `relatorio_${empresaSel}_${Date.now()}`;
     const pdfURL = await uploadPDFToCloudinary(pdfBlob, filename, CLOUDINARY_CLOUD_NAME);
+    console.log("PDF URL:", pdfURL);
+
 
     // Exibe visualização embutida
     const container = document.getElementById("relatorioContainer");
@@ -327,6 +329,7 @@ async function nomeEmpresaPorId(id) {
   const snap = await getDoc(doc(db, "empresas", id));
   return snap.exists() ? snap.data().nome : "";
 }
+
 
 
 
