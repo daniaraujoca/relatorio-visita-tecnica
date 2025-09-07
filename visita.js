@@ -8,8 +8,6 @@ import { gerarPDFVisita, uploadPDFToCloudinary } from "./pdf-utils.js";
 const CLOUDINARY_CLOUD_NAME = "dehekhogh";
 const CLOUDINARY_UPLOAD_PRESET_IMG = "visitas_unsigned";
 const CLOUDINARY_UPLOAD_FOLDER_IMG = "visitas";
-const CLOUDINARY_UPLOAD_PRESET_PDF = "visitas_pdfs_não assinados";
-const CLOUDINARY_UPLOAD_FOLDER_PDF = "visitas_pdfs";
 
 export function initVisitaForm(db) {
   const form = document.getElementById('visitaForm');
@@ -100,14 +98,12 @@ export function initVisitaForm(db) {
       };
       const pdfBlob = await gerarPDFVisita(visitaPlain, fotosAdicionais);
 
-      // 5) Upload do PDF
+      // 5) Upload do PDF (corrigido)
       const filename = `visita_${visitaRef.id}_${Date.now()}`;
       const pdfURL = await uploadPDFToCloudinary(
         pdfBlob,
         filename,
-        CLOUDINARY_CLOUD_NAME,
-        CLOUDINARY_UPLOAD_PRESET_PDF,
-        CLOUDINARY_UPLOAD_FOLDER_PDF
+        CLOUDINARY_CLOUD_NAME
       );
 
       // 6) Atualiza Firestore
@@ -119,7 +115,6 @@ export function initVisitaForm(db) {
       // Feedback
       msgSucesso.style.display = 'block';
       form.reset();
-      // reset dataHora
       const agora = new Date();
       document.getElementById('dataHora').value =
         `${agora.getFullYear()}-${String(agora.getMonth()+1).padStart(2,'0')}-` +
@@ -127,12 +122,10 @@ export function initVisitaForm(db) {
         `${String(agora.getHours()).padStart(2,'0')}:` +
         `${String(agora.getMinutes()).padStart(2,'0')}`;
 
-      // Pergunta download
       if (confirm("PDF gerado. Deseja baixar agora?")) {
         window.open(pdfURL, "_blank");
       }
 
-      // Persiste capa para fotos.html
       localStorage.setItem('tipoServico', tipoServico);
       localStorage.setItem('nomeLocal', nomeLocal);
       localStorage.setItem('nomeTecnico', nomeTecnico);
@@ -184,5 +177,3 @@ async function buscarFotosAdicionaisDaVisita(db, filtro) {
   const snap = await getDocs(q);
   return snap.docs.map(d => d.data());
 }
-
-
