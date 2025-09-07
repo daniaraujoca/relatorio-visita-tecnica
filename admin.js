@@ -177,4 +177,46 @@ async function carregarUsuarios() {
     q = collection(db, "usuarios");
   } else if (role === "admin_empresa") {
     q = query(collection(db, "usuarios"), where("empresaId", "==", empresaId));
-  } else
+  } else {
+    lista.innerHTML = "<p>Sem permissão para visualizar usuários.</p>";
+    return;
+  }
+
+  const snap = await getDocs(q);
+  if (snap.empty) {
+    lista.innerHTML = "<p>Nenhum usuário encontrado.</p>";
+    return;
+  }
+
+  let html = `
+    <table class="tabela-usuarios">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>Função</th>
+          <th>Empresa</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  snap.forEach(docSnap => {
+    const u = docSnap.data();
+    html += `
+      <tr>
+        <td>${u.nome}</td>
+        <td>${u.email}</td>
+        <td>${u.role}</td>
+        <td>${u.nomeEmpresa || ""}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+      </tbody>
+    </table>
+  `;
+
+  lista.innerHTML = html;
+}
