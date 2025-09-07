@@ -8,7 +8,6 @@ html, body {
   padding: 0;
 }
 
-/* ===== TIPOGRAFIA ===== */
 body {
   font-family: Arial, sans-serif;
   line-height: 1.5;
@@ -17,13 +16,44 @@ body {
 }
 
 /* ===== CONTAINERS ===== */
-.container,
-.login-container,
-.container.visita {
+.container {
   width: 100%;
   max-width: 960px;
   margin: auto;
   padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* ===== CABEÇALHO ===== */
+header {
+  background: #0078D7;
+  color: #fff;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-info button {
+  background: #fff;
+  color: #0078D7;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 /* ===== BOTÕES ===== */
@@ -43,7 +73,6 @@ button:hover {
   background-color: #005fa3;
 }
 
-/* Desktop: botões lado a lado */
 @media (min-width: 769px) {
   button {
     width: auto;
@@ -52,7 +81,6 @@ button:hover {
   }
 }
 
-/* Mobile: botões ocupam toda a largura */
 @media (max-width: 768px) {
   button {
     width: 100%;
@@ -73,6 +101,43 @@ form select {
   margin-top: 4px;
   border-radius: 6px;
   border: 1px solid #ccc;
+}
+
+.erro {
+  color: #b00020;
+  font-size: 13px;
+  min-height: 16px;
+  display: block;
+  margin-top: 4px;
+}
+
+/* ===== FORMULÁRIOS CENTRALIZADOS NO ADMIN ===== */
+.admin-form {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* ===== LOGIN ===== */
+body.login-page {
+  background: #eef2f3;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 380px;
+  background: #fff;
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+}
+
+.login-container h1 {
+  margin-bottom: 20px;
+  text-align: center;
 }
 
 /* ===== TABELAS ===== */
@@ -103,7 +168,6 @@ form select {
   background-color: #e6f0ff;
 }
 
-/* Rolagem horizontal no mobile */
 @media (max-width: 768px) {
   .tabela-usuarios {
     display: block;
@@ -112,7 +176,24 @@ form select {
   }
 }
 
-/* ===== CARDS DE VISITA ===== */
+/* ===== LISTAR VISITAS ===== */
+#filtros {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.loading {
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  display: inline-block;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  margin-bottom: 12px;
+}
+
 .visita-card {
   background: white;
   border: 1px solid #ddd;
@@ -122,23 +203,49 @@ form select {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* ===== IMAGENS ===== */
-.fotos-adicionais img,
-.foto-principal {
-  max-width: 100%;
-  height: auto;
-  border-radius: 6px;
+/* ===== FOTOS ===== */
+.fotos-adicionais {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
 }
 
-/* ===== RESPONSIVIDADE GERAL ===== */
+.fotos-adicionais img {
+  width: 160px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.fotos-adicionais img:hover {
+  transform: scale(1.03);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.foto-principal {
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+/* ===== RESPONSIVIDADE ===== */
 @media (max-width: 640px) {
-  .container,
-  .login-container,
-  .container.visita {
+  .container {
     padding: 16px 12px;
   }
 
   h1, h2 {
     font-size: 1.4rem;
+  }
+
+  .fotos-adicionais img {
+    width: calc(50% - 6px);
+    height: 110px;
   }
 }
