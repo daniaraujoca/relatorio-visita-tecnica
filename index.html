@@ -1,19 +1,45 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Eco Chama - Sistema de Visitas Técnicas</title>
+  <title>Eco Chama – Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <link rel="stylesheet" href="style.css">
-
-    
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
+  <div class="login-container">
     <h1>Eco Chama</h1>
-    <p>Selecione como deseja acessar o sistema:</p>
-    <a href="admin-login.html">Acesso Administrativo</a>
-    <a href="visita.html">Registrar Visita Técnica</a>
+    <form id="loginForm" novalidate>
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="seu@exemplo.com"
+          required
+          autocomplete="username"
+        >
+      </div>
+      <div class="form-group">
+        <label for="senha">Senha</label>
+        <input
+          type="password"
+          id="senha"
+          name="senha"
+          placeholder="••••••••"
+          required
+          autocomplete="current-password"
+        >
+      </div>
+      <button type="submit" id="btnLogin">Entrar</button>
+      <p id="loginError" class="erro" aria-live="polite"></p>
+      <div id="loadingLogin" class="loading" style="display:none;">
+        Autenticando...
+      </div>
+    </form>
   </div>
+
+  <script type="module" src="login.js"></script>
 </body>
 </html>
