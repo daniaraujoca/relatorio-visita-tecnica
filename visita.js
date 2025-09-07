@@ -9,7 +9,7 @@ const CLOUDINARY_CLOUD_NAME = "dehekhogh";
 const CLOUDINARY_UPLOAD_PRESET_IMG = "visitas_unsigned";
 const CLOUDINARY_UPLOAD_FOLDER_IMG = "visitas";
 const CLOUDINARY_UPLOAD_PRESET_PDF = "visitas_pdfs_não assinados";
-const CLOUDINARY_UPLOAD_FOLDER_PDF = "visits_pdfs";
+const CLOUDINARY_UPLOAD_FOLDER_PDF = "visitas_pdfs";
 
 export function initVisitaForm(db) {
   const form = document.getElementById('visitaForm');
@@ -184,4 +184,5 @@ async function buscarFotosAdicionaisDaVisita(db, filtro) {
   const snap = await getDocs(q);
   return snap.docs.map(d => d.data());
 }
+
 
