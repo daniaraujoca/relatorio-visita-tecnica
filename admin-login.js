@@ -1,5 +1,5 @@
 import { auth, db } from "./firebaseConfig.js";
-import { signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
+import { signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js";
 
 const form = document.getElementById("loginForm");
@@ -30,9 +30,10 @@ form.addEventListener("submit", async (e) => {
     if (!perfilSnap.exists()) throw new Error("Perfil de usuário não encontrado.");
 
     const perfil = perfilSnap.data();
+
     // Armazena contexto
     localStorage.setItem("usuarioId", cred.user.uid);
-    localStorage.setItem("role", perfil.role || "");
+    localStorage.setItem("role", (perfil.role || "").toLowerCase());
     localStorage.setItem("empresaId", perfil.empresaId || "");
     localStorage.setItem("nomeEmpresa", perfil.nomeEmpresa || "");
 
@@ -61,9 +62,34 @@ btnReset.addEventListener("click", async () => {
   }
 });
 
-// Se já estiver logado, envia para admin
-onAuthStateChanged(auth, (user) => {
-  if (user && localStorage.getItem("role")) {
-    window.location.href = "admin.html";
+// Se já estiver logado, valida papel antes de entrar
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    try {
+      const perfilSnap = await getDoc(doc(db, "usuarios", user.uid));
+      if (perfilSnap.exists()) {
+        const perfil = perfilSnap.data();
+        const role = (perfil.role || "").toLowerCase();
+
+        if (role === "superadmin" || role === "admin_empresa") {
+          // Armazena contexto se não existir
+          if (!localStorage.getItem("role")) {
+            localStorage.setItem("usuarioId", user.uid);
+            localStorage.setItem("role", role);
+            localStorage.setItem("empresaId", perfil.empresaId || "");
+            localStorage.setItem("nomeEmpresa", perfil.nomeEmpresa || "");
+          }
+          window.location.href = "admin.html";
+          return;
+        }
+      }
+      // Se não tiver perfil válido, força logout
+      await signOut(auth);
+      localStorage.clear();
+    } catch (err) {
+      console.error("Erro ao validar sessão:", err);
+      await signOut(auth);
+      localStorage.clear();
+    }
   }
 });
