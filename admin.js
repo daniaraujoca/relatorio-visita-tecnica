@@ -26,12 +26,14 @@ if (role === "superadmin") {
   empresaSelectContainer.style.display = "block";
   carregarEmpresasSelect("empresaUsuario");
   carregarEmpresasSelect("relatorioEmpresa");
+  carregarUsuarios();
 } else if (role === "admin_empresa") {
   secUsuarios.style.display = "block";
   secRelatorios.style.display = "block";
   empresaSelectContainer.style.display = "none";
   const sel = document.getElementById("relatorioEmpresa");
   sel.innerHTML = `<option value="${empresaId}">${nomeEmpresa}</option>`;
+  carregarUsuarios();
 } else {
   alert("Acesso negado.");
   window.location.href = "admin-login.html";
@@ -80,13 +82,11 @@ document.getElementById("formUsuario")?.addEventListener("submit", async (e) => 
   }
 
   try {
-    // Cria app secundário para não derrubar sessão do app principal
     const secondaryApp = initializeApp(firebaseConfig, "Secondary");
     const secondaryAuth = getAuth(secondaryApp);
 
     const cred = await createUserWithEmailAndPassword(secondaryAuth, email, senha);
 
-    // Salva perfil no Firestore usando o db do app principal
     await setDoc(doc(db, "usuarios", cred.user.uid), {
       nome,
       email,
@@ -97,17 +97,17 @@ document.getElementById("formUsuario")?.addEventListener("submit", async (e) => 
       criadoEm: Timestamp.now()
     });
 
-    // Encerra sessão do app secundário
     await signOutAuth(secondaryAuth);
 
     alert("Usuário criado com sucesso.");
     e.target.reset();
+    carregarUsuarios();
   } catch (err) {
     alert("Erro ao criar usuário: " + err.message);
   }
 });
 
-// Geração de relatório PDF
+// ===== RELATÓRIO MELHORADO =====
 document.getElementById("btnGerarRelatorio")?.addEventListener("click", async () => {
   const empresaSel = document.getElementById("relatorioEmpresa").value;
   const dataInicio = document.getElementById("dataInicio").value;
@@ -129,18 +129,26 @@ document.getElementById("btnGerarRelatorio")?.addEventListener("click", async ()
 
   if (!visitas.length) return alert("Nenhuma visita no período.");
 
-  // Gera PDF consolidado
   const { jsPDF } = await import("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.es.min.js");
+  const { default: autoTable } = await import("https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js");
+
   const docPDF = new jsPDF();
   docPDF.setFontSize(16);
   docPDF.text(`Relatório de Visitas - ${await nomeEmpresaPorId(empresaSel)}`, 10, 20);
   docPDF.setFontSize(11);
 
-  let y = 30;
-  visitas.forEach((v, idx) => {
-    docPDF.text(`${idx + 1}. ${v.tipoServico} - ${v.nomeLocal} - ${v.nomeTecnico} - ${new Date(v.dataHora.seconds * 1000).toLocaleString()}`, 10, y);
-    y += 6;
-    if (y > 280) { docPDF.addPage(); y = 20; }
+  autoTable(docPDF, {
+    startY: 30,
+    head: [['#', 'Data/Hora', 'Serviço', 'Local', 'Técnico']],
+    body: visitas.map((v, idx) => [
+      idx + 1,
+      new Date(v.dataHora.seconds * 1000).toLocaleString(),
+      v.tipoServico,
+      v.nomeLocal,
+      v.nomeTecnico
+    ]),
+    styles: { fontSize: 10, cellPadding: 3 },
+    headStyles: { fillColor: [0, 120, 215] }
   });
 
   docPDF.save(`relatorio_${empresaSel}_${dataInicio}_${dataFim}.pdf`);
@@ -162,4 +170,58 @@ async function nomeEmpresaPorId(id) {
   if (!id) return "";
   const snap = await getDoc(doc(db, "empresas", id));
   return snap.exists() ? snap.data().nome : "";
+}
+
+async function carregarUsuarios() {
+  const lista = document.getElementById("listaUsuarios");
+  if (!lista) return;
+  lista.innerHTML = "<p>Carregando usuários...</p>";
+
+  let q;
+  if (role === "superadmin") {
+    q = collection(db, "usuarios");
+  } else if (role === "admin_empresa") {
+    q = query(collection(db, "usuarios"), where("empresaId", "==", empresaId));
+  } else {
+    lista.innerHTML = "<p>Sem permissão para visualizar usuários.</p>";
+    return;
+  }
+
+  const snap = await getDocs(q);
+  if (snap.empty) {
+    lista.innerHTML = "<p>Nenhum usuário encontrado.</p>";
+    return;
+  }
+
+  let html = `
+    <table class="tabela-usuarios">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>Função</th>
+          <th>Empresa</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  snap.forEach(docSnap => {
+    const u = docSnap.data();
+    html += `
+      <tr>
+        <td>${u.nome}</td>
+        <td>${u.email}</td>
+        <td>${u.role}</td>
+        <td>${u.nomeEmpresa || ""}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+      </tbody>
+    </table>
+  `;
+
+  lista.innerHTML = html;
 }
