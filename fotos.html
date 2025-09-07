@@ -1,49 +1,69 @@
-<!-- fotos.html -->
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Fotos da Visita</title>
+  <title>Registro Fotográfico</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
-  <div class="container">
-    <h2>Registro Fotográfico</h2>
+  <header>
+    <h1>Registro Fotográfico</h1>
+    <button id="btnLogout" class="link-button">Sair</button>
+  </header>
 
-    <form id="fotoForm">
-      <label for="foto">Foto da Instalação/Manutenção:</label>
-      <input type="file" id="foto" accept="image/*" capture="environment" required>
-      <small class="erro" id="erroFoto"></small>
-
-      <div class="dados-capa">
-        <label for="tipo">Tipo de Serviço:</label>
-        <input type="text" id="tipo" readonly>
-
-        <label for="local">Nome do Local:</label>
-        <input type="text" id="local" readonly>
-
-        <label for="tecnico">Nome do Técnico:</label>
-        <input type="text" id="tecnico" readonly>
-
-        <label for="endereco">Endereço:</label>
-        <input type="text" id="endereco" readonly>
-
-        <label for="dataHora">Data e Hora:</label>
-        <input type="text" id="dataHora" readonly>
-      </div>
-
-      <button type="submit" id="btnSalvarFoto">Salvar Foto</button>
-      <p id="mensagemSucesso" style="color:green; display:none;">✅ Foto salva com sucesso!</p>
-    </form>
-  </div>
+  <main>
+    <div class="container">
+      <form id="fotoForm" novalidate>
+        <div class="form-group">
+          <label for="foto">Foto da Visita</label>
+          <input type="file" id="foto" accept="image/*" capture="environment" required>
+          <small id="erroFoto" class="erro"></small>
+        </div>
+        <div class="form-group">
+          <label for="tipo">Tipo de Serviço</label>
+          <input type="text" id="tipo" readonly>
+        </div>
+        <div class="form-group">
+          <label for="local">Nome do Local</label>
+          <input type="text" id="local" readonly>
+        </div>
+        <div class="form-group">
+          <label for="tecnico">Nome do Técnico</label>
+          <input type="text" id="tecnico" readonly>
+        </div>
+        <div class="form-group">
+          <label for="endereco">Endereço</label>
+          <input type="text" id="endereco" readonly>
+        </div>
+        <div class="form-group">
+          <label for="dataHora">Data e Hora</label>
+          <input type="text" id="dataHora" readonly>
+        </div>
+        <button type="submit" id="btnSalvarFoto">Salvar Foto</button>
+        <p id="mensagemSucesso" class="success" style="display:none;">
+          ✅ Foto salva com sucesso!
+        </p>
+      </form>
+    </div>
+  </main>
 
   <script type="module">
-    import { db } from './firebaseConfig.js';
-    import { initFotosForm } from './fotos.js';
+    import { auth, db } from "./firebaseConfig.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
+    import { initFotosForm } from "./fotos.js";
+
+    onAuthStateChanged(auth, user => {
+      if (!user) window.location.replace("index.html");
+    });
+
+    document.getElementById("btnLogout").addEventListener("click", async () => {
+      await signOut(auth);
+      localStorage.clear();
+      window.location.replace("index.html");
+    });
+
     initFotosForm(db);
   </script>
 </body>
 </html>
-
