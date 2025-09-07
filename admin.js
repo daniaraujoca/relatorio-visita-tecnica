@@ -191,30 +191,51 @@ document.getElementById("btnGerarRelatorio").addEventListener("click", async () 
 
   if (!visitas.length) return alert("Nenhuma visita no período.");
 
-  // Geração de PDF
-  const { jsPDF } = await import("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.es.min.js");
-  const { default: autoTable } = await import("https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js");
+  try {
+    const { jsPDF } = await import("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
+    const { default: autoTable } = await import("https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js");
 
-  const docPDF = new jsPDF();
-  docPDF.setFontSize(16);
-  docPDF.text(`Relatório de Visitas - ${await nomeEmpresaPorId(empresaSel)}`, 10, 20);
-  docPDF.setFontSize(11);
-  autoTable(docPDF, {
-    startY: 30,
-    head: [['#', 'Data/Hora', 'Serviço', 'Local', 'Técnico']],
-    body: visitas.map((v, i) => [
-      i + 1,
-      new Date(v.dataHora.seconds * 1000).toLocaleString(),
-      v.tipoServico,
-      v.nomeLocal,
-      v.nomeTecnico
-    ]),
-    styles: { fontSize: 10, cellPadding: 3 },
-    headStyles: { fillColor: [0, 120, 215] }
-  });
+    const docPDF = new jsPDF();
+    docPDF.setFontSize(16);
+    docPDF.text(`Relatório de Visitas - ${await nomeEmpresaPorId(empresaSel)}`, 10, 20);
+    docPDF.setFontSize(11);
+    autoTable(docPDF, {
+      startY: 30,
+      head: [['#', 'Data/Hora', 'Serviço', 'Local', 'Técnico']],
+      body: visitas.map((v, i) => [
+        i + 1,
+        new Date(v.dataHora.seconds * 1000).toLocaleString(),
+        v.tipoServico,
+        v.nomeLocal,
+        v.nomeTecnico
+      ]),
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: [0, 120, 215] }
+    });
 
-  // Salva PDF localmente
-  docPDF.save(`relatorio_${empresaSel}_${dataInicio}_${dataFim}.pdf`);
+    // Gera blob e envia para Cloudinary
+    const pdfBlob = docPDF.output("blob");
+    const filename = `relatorio_${empresaSel}_${Date.now()}`;
+    const pdfURL = await uploadPDFToCloudinary(pdfBlob, filename, CLOUDINARY_CLOUD_NAME);
+
+    // Exibe visualização embutida
+    const container = document.getElementById("relatorioContainer");
+    container.innerHTML = `
+      <h3>Relatório Gerado</h3>
+      <iframe
+        src="${pdfURL}"
+        width="100%"
+        height="600px"
+        style="border: 1px solid #ccc;"
+        title="Relatório de Visitas"
+      ></iframe>
+      <p>
+        Se o relatório não carregar, <a href="${pdfURL}" target="_blank">clique aqui para abrir</a>.
+      </p>
+    `;
+  } catch (err) {
+    alert("Erro ao gerar relatório: " + err.message);
+  }
 });
 
 // Funções auxiliares
@@ -284,3 +305,4 @@ async function nomeEmpresaPorId(id) {
   const snap = await getDoc(doc(db, "empresas", id));
   return snap.exists() ? snap.data().nome : "";
 }
+
