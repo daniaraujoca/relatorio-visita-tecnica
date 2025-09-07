@@ -1,4 +1,4 @@
-import { auth, db } from "./firebaseConfig.js";
+import { auth, db, firebaseConfig } from "./firebaseConfig.js";
 import {
   onAuthStateChanged,
   signOut
@@ -15,6 +15,7 @@ import {
   updateDoc,
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js";
+import { gerarPDFVisita, uploadPDFToCloudinary } from "./pdf-utils.js";
 
 // Elementos de UI
 const userRoleSpan = document.getElementById("userRole");
@@ -25,28 +26,32 @@ const secRelatorios = document.getElementById("secRelatorios");
 const empresaSelectContainer = document.getElementById("empresaSelectContainer");
 const loadingUsuarios = document.getElementById("loadingUsuarios");
 
-// Verifica autenticação e perfil
+// PDF/Cloudinary
+const CLOUDINARY_CLOUD_NAME = "dehekhogh";
+const CLOUDINARY_PDF_PRESET = "visits_pdfs_unsigned";
+const CLOUDINARY_PDF_FOLDER = "visits_pdfs";
+
+// 1) Valida sessão e ajusta interface
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.replace("index.html");
     return;
   }
+
   try {
     const perfilSnap = await getDoc(doc(db, "usuarios", user.uid));
     if (!perfilSnap.exists()) throw new Error();
-    const perfil = perfilSnap.data();
 
+    const perfil = perfilSnap.data();
     const role = (perfil.role || "").toLowerCase();
     const empresaId = perfil.empresaId || "";
     const nomeEmpresa = perfil.nomeEmpresa || "";
 
-    // Armazena contexto
     localStorage.setItem("usuarioId", user.uid);
     localStorage.setItem("role", role);
     localStorage.setItem("empresaId", empresaId);
     localStorage.setItem("nomeEmpresa", nomeEmpresa);
 
-    // Ajusta interface
     userRoleSpan.textContent = `Papel: ${role}`;
 
     if (role === "superadmin") {
@@ -55,41 +60,40 @@ onAuthStateChanged(auth, async (user) => {
       secRelatorios.style.display = "block";
       empresaSelectContainer.style.display = "block";
 
-      // Popula selects
       carregarEmpresasSelect("empresaUsuario");
       carregarEmpresasSelect("relatorioEmpresa");
-
-      // Carrega usuários
       carregarUsuarios();
+
     } else if (role === "admin_empresa") {
       secUsuarios.style.display = "block";
       secRelatorios.style.display = "block";
       empresaSelectContainer.style.display = "none";
 
-      // predefine relatório para a própria empresa
       const selRel = document.getElementById("relatorioEmpresa");
       selRel.innerHTML = `<option value="${empresaId}">${nomeEmpresa}</option>`;
 
       carregarUsuarios();
+
     } else {
       alert("Acesso negado.");
       await signOut(auth);
       localStorage.clear();
       window.location.replace("index.html");
     }
+
   } catch {
     window.location.replace("index.html");
   }
 });
 
-// Logout
+// 2) Logout
 btnLogout.addEventListener("click", async () => {
   await signOut(auth);
   localStorage.clear();
   window.location.replace("index.html");
 });
 
-// Cadastro de empresa (superadmin)
+// 3) Cadastro de empresa
 document.getElementById("formEmpresa").addEventListener("submit", async (e) => {
   e.preventDefault();
   const nome = document.getElementById("nomeEmpresa").value.trim();
@@ -108,14 +112,15 @@ document.getElementById("formEmpresa").addEventListener("submit", async (e) => {
   carregarEmpresasSelect("relatorioEmpresa");
 });
 
-// Cadastro de usuário (superadmin e admin_empresa)
+// 4) Cadastro de usuário
 document.getElementById("formUsuario").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const nome = document.getElementById("nomeUsuario").value.trim();
-  const email = document.getElementById("emailUsuario").value.trim();
-  const senha = document.getElementById("senhaUsuario").value;
+
+  const nome        = document.getElementById("nomeUsuario").value.trim();
+  const email       = document.getElementById("emailUsuario").value.trim();
+  const senha       = document.getElementById("senhaUsuario").value;
   const roleUsuario = document.getElementById("roleUsuario").value;
-  let empresaUsuarioId = localStorage.getItem("empresaId");
+  let   empresaUsuarioId = localStorage.getItem("empresaId");
 
   if (localStorage.getItem("role") === "superadmin") {
     empresaUsuarioId = document.getElementById("empresaUsuario").value;
@@ -127,10 +132,11 @@ document.getElementById("formUsuario").addEventListener("submit", async (e) => {
   }
 
   try {
-    // Cria conta em app secundário para não desconectar o usuário atual
+    // App secundário para criar sem deslogar
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js");
-    const { getAuth, createUserWithEmailAndPassword } =
+    const { getAuth, createUserWithEmailAndPassword } = 
       await import("https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js");
+
     const secondaryApp = initializeApp(firebaseConfig, "Secondary");
     const secondaryAuth = getAuth(secondaryApp);
 
@@ -153,17 +159,66 @@ document.getElementById("formUsuario").addEventListener("submit", async (e) => {
     alert("Usuário criado com sucesso.");
     e.target.reset();
     carregarUsuarios();
+
   } catch (err) {
     alert("Erro ao criar usuário: " + err.message);
   }
 });
 
-// Geração de relatório em PDF
+// 5) Geração de relatório
 document.getElementById("btnGerarRelatorio").addEventListener("click", async () => {
-  // ... mantenha a lógica de geração de PDF (igual antes)
+  const empresaSel = document.getElementById("relatorioEmpresa").value;
+  const dataInicio = document.getElementById("dataInicio").value;
+  const dataFim    = document.getElementById("dataFim").value;
+
+  if (!empresaSel)           return alert("Selecione a empresa.");
+  if (!dataInicio || !dataFim) return alert("Informe o período.");
+
+  // Busca visitas no período
+  const visitas = [];
+  const qVisitas = query(
+    collection(db, "visitas"),
+    where("empresaId", "==", empresaSel)
+  );
+  const snapVisitas = await getDocs(qVisitas);
+  snapVisitas.forEach(docSnap => {
+    const v = docSnap.data();
+    const dt = v.dataHora.toDate ? v.dataHora.toDate() : new Date(v.dataHora);
+    if (dt >= new Date(dataInicio) && dt <= new Date(dataFim)) {
+      visitas.push(v);
+    }
+  });
+
+  if (!visitas.length) return alert("Nenhuma visita no período.");
+
+  // Geração de PDF
+  const { jsPDF } = await import("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.es.min.js");
+  const { default: autoTable } = await import("https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js");
+
+  const docPDF = new jsPDF();
+  docPDF.setFontSize(16);
+  docPDF.text(`Relatório de Visitas - ${await nomeEmpresaPorId(empresaSel)}`, 10, 20);
+  docPDF.setFontSize(11);
+  autoTable(docPDF, {
+    startY: 30,
+    head: [['#', 'Data/Hora', 'Serviço', 'Local', 'Técnico']],
+    body: visitas.map((v, i) => [
+      i + 1,
+      new Date(v.dataHora.seconds * 1000).toLocaleString(),
+      v.tipoServico,
+      v.nomeLocal,
+      v.nomeTecnico
+    ]),
+    styles: { fontSize: 10, cellPadding: 3 },
+    headStyles: { fillColor: [0, 120, 215] }
+  });
+
+  // Salva PDF localmente
+  docPDF.save(`relatorio_${empresaSel}_${dataInicio}_${dataFim}.pdf`);
 });
 
-// Carrega lista de empresas em um <select>
+// Funções auxiliares
+
 async function carregarEmpresasSelect(selectId) {
   const sel = document.getElementById(selectId);
   sel.innerHTML = `<option value="">Selecione</option>`;
@@ -174,7 +229,6 @@ async function carregarEmpresasSelect(selectId) {
   });
 }
 
-// Carrega lista de usuários sob jurisdição
 async function carregarUsuarios() {
   const lista = document.getElementById("listaUsuarios");
   lista.innerHTML = "";
@@ -225,8 +279,8 @@ async function carregarUsuarios() {
   }
 }
 
-// Auxiliar para buscar nome de empresa pelo ID
 async function nomeEmpresaPorId(id) {
+  if (!id) return "";
   const snap = await getDoc(doc(db, "empresas", id));
   return snap.exists() ? snap.data().nome : "";
 }
