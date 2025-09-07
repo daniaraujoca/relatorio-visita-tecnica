@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>Painel Administrativo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
   <header>
@@ -17,67 +16,73 @@
   </header>
 
   <main>
-    <!-- Seção visível apenas para SUPERADMIN -->
+    <!-- Seção de gerenciamento de empresas (superadmin) -->
     <section id="secEmpresas" style="display:none;">
       <h2>Cadastro de Empresas</h2>
-      <form id="formEmpresa">
-        <label for="nomeEmpresa">Nome da Empresa:</label>
-        <input type="text" id="nomeEmpresa" required>
-
-        <label for="cnpjEmpresa">CNPJ:</label>
-        <input type="text" id="cnpjEmpresa">
-
+      <form id="formEmpresa" novalidate>
+        <div class="form-group">
+          <label for="nomeEmpresa">Nome da Empresa</label>
+          <input type="text" id="nomeEmpresa" required>
+        </div>
+        <div class="form-group">
+          <label for="cnpjEmpresa">CNPJ</label>
+          <input type="text" id="cnpjEmpresa">
+        </div>
         <button type="submit">Salvar Empresa</button>
       </form>
       <div id="listaEmpresas"></div>
     </section>
 
-    <!-- Cadastro de usuários (técnicos/admins de empresa) -->
+    <!-- Seção de gerenciamento de usuários (admin_empresa & superadmin) -->
     <section id="secUsuarios" style="display:none;">
       <h2>Cadastro de Usuários</h2>
-      <form id="formUsuario">
-        <label for="nomeUsuario">Nome:</label>
-        <input type="text" id="nomeUsuario" required>
-
-        <label for="emailUsuario">E-mail:</label>
-        <input type="email" id="emailUsuario" required>
-
-        <label for="senhaUsuario">Senha:</label>
-        <input type="password" id="senhaUsuario" required>
-
-        <label for="roleUsuario">Função:</label>
-        <select id="roleUsuario" required>
-          <option value="">Selecione</option>
-          <option value="admin_empresa">Admin da Empresa</option>
-          <option value="tecnico">Técnico</option>
-        </select>
-
-        <!-- Apenas superadmin escolhe empresa -->
-        <div id="empresaSelectContainer" style="display:none;">
-          <label for="empresaUsuario">Empresa:</label>
+      <form id="formUsuario" novalidate>
+        <div class="form-group">
+          <label for="nomeUsuario">Nome</label>
+          <input type="text" id="nomeUsuario" required>
+        </div>
+        <div class="form-group">
+          <label for="emailUsuario">E-mail</label>
+          <input type="email" id="emailUsuario" required>
+        </div>
+        <div class="form-group">
+          <label for="senhaUsuario">Senha</label>
+          <input type="password" id="senhaUsuario" required>
+        </div>
+        <div class="form-group">
+          <label for="roleUsuario">Função</label>
+          <select id="roleUsuario" required>
+            <option value="">Selecione</option>
+            <option value="admin_empresa">Admin da Empresa</option>
+            <option value="tecnico">Técnico</option>
+          </select>
+        </div>
+        <div id="empresaSelectContainer" class="form-group" style="display:none;">
+          <label for="empresaUsuario">Empresa</label>
           <select id="empresaUsuario"></select>
         </div>
-
         <button type="submit">Salvar Usuário</button>
       </form>
 
-      <button type="button" onclick="window.location.href='index.html'">Voltar</button>
-
+      <div id="loadingUsuarios" class="loading" style="display:none;">Carregando usuários...</div>
       <div id="listaUsuarios"></div>
     </section>
 
-    <!-- Relatórios -->
+    <!-- Seção de relatórios (admin_empresa & superadmin) -->
     <section id="secRelatorios" style="display:none;">
       <h2>Relatórios</h2>
-      <label for="relatorioEmpresa">Empresa:</label>
-      <select id="relatorioEmpresa"></select>
-
-      <label for="dataInicio">Data Início:</label>
-      <input type="date" id="dataInicio">
-
-      <label for="dataFim">Data Fim:</label>
-      <input type="date" id="dataFim">
-
+      <div class="form-group">
+        <label for="relatorioEmpresa">Empresa</label>
+        <select id="relatorioEmpresa"></select>
+      </div>
+      <div class="form-group">
+        <label for="dataInicio">Data Início</label>
+        <input type="date" id="dataInicio">
+      </div>
+      <div class="form-group">
+        <label for="dataFim">Data Fim</label>
+        <input type="date" id="dataFim">
+      </div>
       <button id="btnGerarRelatorio">Gerar Relatório PDF</button>
     </section>
   </main>
@@ -85,5 +90,3 @@
   <script type="module" src="admin.js"></script>
 </body>
 </html>
-
-
