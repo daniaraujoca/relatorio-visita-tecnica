@@ -1,0 +1,329 @@
+/* =========================
+   ESTILOS GERAIS
+========================= */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f5f5f5;
+}
+
+h1, h2 {
+  margin-top: 0;
+}
+
+label {
+  display: block;
+  margin-top: 12px;
+  font-weight: bold;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid #cfd8dc;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+input[readonly] {
+  background: #f1f5f9;
+  color: #374151;
+}
+
+button {
+  background-color: #0078D7;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  margin-top: 8px;
+  padding: 10px 16px;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #005fa3;
+}
+
+.erro {
+  color: #b00020;
+  font-size: 13px;
+  min-height: 16px;
+  display: block;
+  margin-top: 4px;
+}
+
+/* Desktop: botões lado a lado */
+@media (min-width: 769px) {
+  button {
+    width: auto;
+    display: inline-block;
+    margin-right: 8px;
+  }
+}
+
+/* Mobile: botões ocupam toda a largura */
+@media (max-width: 768px) {
+  button {
+    width: 100%;
+  }
+}
+
+/* =========================
+   LOGIN ADMINISTRATIVO
+========================= */
+body.login-page {
+  background: #eef2f3;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+}
+
+.login-container h1 {
+  margin: 0 0 16px;
+  text-align: center;
+}
+
+.ajuda {
+  margin-top: 10px;
+}
+
+.ajuda button {
+  background: #ECEFF1;
+  color: #263238;
+}
+
+/* =========================
+   PAINEL ADMINISTRATIVO
+========================= */
+#secRelatorios {
+  background: #f9f9f9;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+#secRelatorios label {
+  margin-top: 10px;
+}
+
+#secRelatorios select,
+#secRelatorios input[type="date"] {
+  max-width: 300px;
+}
+
+.tabela-usuarios {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.tabela-usuarios th,
+.tabela-usuarios td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.tabela-usuarios th {
+  background-color: #0078D7;
+  color: white;
+  text-align: left;
+}
+
+.tabela-usuarios tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.tabela-usuarios tr:hover {
+  background-color: #e6f0ff;
+}
+
+/* =========================
+   PÁGINA DE FOTOS
+========================= */
+.container {
+  max-width: 640px;
+  margin: auto;
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px 16px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.06);
+}
+
+input[type="file"] {
+  background: #fff;
+}
+
+input[readonly] {
+  background: #f1f5f9;
+  color: #374151;
+}
+
+/* =========================
+   LISTAR VISITAS
+========================= */
+#filtros {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+#filtros input,
+#filtros select,
+#filtros button {
+  padding: 8px;
+  font-size: 14px;
+}
+
+.loading {
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  display: inline-block;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  margin-bottom: 12px;
+}
+
+.visita-card {
+  background: white;
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.visita-card img {
+  display: block;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.fotos-adicionais {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.fotos-adicionais img {
+  width: 160px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.fotos-adicionais img:hover {
+  transform: scale(1.03);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.foto-principal {
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.acoes-visita {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.acoes-visita .btn,
+.acoes-visita button {
+  background: #0078D7;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.acoes-visita .btn:hover,
+.acoes-visita button:hover {
+  background: #0063b2;
+}
+
+/* Lightbox */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.lightbox-img {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+body.no-scroll {
+  overflow: hidden;
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .fotos-adicionais img {
+    width: calc(50% - 6px);
+    height: 110px;
+  }
+  .foto-principal {
+    max-width: 100%;
+  }
+}
+
+/* =========================
+   VISITA TÉCNICA
+========================= */
+body.visita-page {
+  background-color: #eef2f3;
+}
+
+.container.visita {
+  max-width: 640px;
+  margin: auto;
+  background-color: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+}
+
+.container.visita h1 {
+  text-align: center;
+  margin: 0 0 20px;
+}
+
+input:focus, select:focus, button:focus {
+  outline: 3px solid rgba(0,120,215,0.35);
+  border-color: #0078D7;
+}
