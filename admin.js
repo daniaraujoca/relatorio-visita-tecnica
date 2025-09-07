@@ -26,14 +26,12 @@ if (role === "superadmin") {
   empresaSelectContainer.style.display = "block";
   carregarEmpresasSelect("empresaUsuario");
   carregarEmpresasSelect("relatorioEmpresa");
-  carregarUsuarios();
 } else if (role === "admin_empresa") {
   secUsuarios.style.display = "block";
   secRelatorios.style.display = "block";
   empresaSelectContainer.style.display = "none";
   const sel = document.getElementById("relatorioEmpresa");
   sel.innerHTML = `<option value="${empresaId}">${nomeEmpresa}</option>`;
-  carregarUsuarios();
 } else {
   alert("Acesso negado.");
   window.location.href = "admin-login.html";
@@ -104,7 +102,6 @@ document.getElementById("formUsuario")?.addEventListener("submit", async (e) => 
 
     alert("Usuário criado com sucesso.");
     e.target.reset();
-    carregarUsuarios();
   } catch (err) {
     alert("Erro ao criar usuário: " + err.message);
   }
@@ -166,48 +163,3 @@ async function nomeEmpresaPorId(id) {
   const snap = await getDoc(doc(db, "empresas", id));
   return snap.exists() ? snap.data().nome : "";
 }
-
-async function carregarUsuarios() {
-  const lista = document.getElementById("listaUsuarios");
-  lista.innerHTML = "<p>Carregando usuários...</p>";
-
-  let q;
-  if (role === "superadmin") {
-    q = collection(db, "usuarios");
-  } else if (role === "admin_empresa") {
-    q = query(collection(db, "usuarios"), where("empresaId", "==", empresaId));
-  } else {
-    lista.innerHTML = "<p>Sem permissão para visualizar usuários.</p>";
-    return;
-  }
-
-  const snap = await getDocs(q);
-  if (snap.empty) {
-    lista.innerHTML = "<p>Nenhum usuário encontrado.</p>";
-    return;
-  }
-
-  let html = `
-    <table class="tabela-usuarios">
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Email</th>
-          <th>Função</th>
-          <th>Empresa</th>
-        </tr>
-      </thead>
-      <tbody>
-  `;
-  snap.forEach(docSnap => {
-    const u = docSnap.data();
-    html += `
-      <tr>
-        <td>${u.nome}</td>
-        <td>${u.email}</td>
-        <td>${u.role}</td>
-        <td>${u.nomeEmpresa || ""}</td>
-      </tr>
-    `;
-  });
-  html += "</
