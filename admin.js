@@ -26,12 +26,14 @@ if (role === "superadmin") {
   empresaSelectContainer.style.display = "block";
   carregarEmpresasSelect("empresaUsuario");
   carregarEmpresasSelect("relatorioEmpresa");
+  carregarUsuarios();
 } else if (role === "admin_empresa") {
   secUsuarios.style.display = "block";
   secRelatorios.style.display = "block";
   empresaSelectContainer.style.display = "none";
   const sel = document.getElementById("relatorioEmpresa");
   sel.innerHTML = `<option value="${empresaId}">${nomeEmpresa}</option>`;
+  carregarUsuarios();
 } else {
   alert("Acesso negado.");
   window.location.href = "admin-login.html";
@@ -102,6 +104,7 @@ document.getElementById("formUsuario")?.addEventListener("submit", async (e) => 
 
     alert("Usuário criado com sucesso.");
     e.target.reset();
+    carregarUsuarios(); // Atualiza lista
   } catch (err) {
     alert("Erro ao criar usuário: " + err.message);
   }
@@ -163,3 +166,15 @@ async function nomeEmpresaPorId(id) {
   const snap = await getDoc(doc(db, "empresas", id));
   return snap.exists() ? snap.data().nome : "";
 }
+
+async function carregarUsuarios() {
+  const lista = document.getElementById("listaUsuarios");
+  if (!lista) return;
+  lista.innerHTML = "<p>Carregando usuários...</p>";
+
+  let q;
+  if (role === "superadmin") {
+    q = collection(db, "usuarios");
+  } else if (role === "admin_empresa") {
+    q = query(collection(db, "usuarios"), where("empresaId", "==", empresaId));
+  } else
