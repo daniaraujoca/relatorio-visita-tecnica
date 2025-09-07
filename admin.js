@@ -207,10 +207,11 @@ document.getElementById("btnGerarRelatorio").addEventListener("click", async () 
   }
 
   try {
-    // Importa jsPDF e autoTable
+    // Importa jsPDF e autoTable corretamente
     await import("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
+    await import("https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js");
+
     const { jsPDF } = window.jspdf;
-    const { default: autoTable } = await import("https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js");
 
     // Gera PDF
     const docPDF = new jsPDF();
@@ -219,7 +220,7 @@ document.getElementById("btnGerarRelatorio").addEventListener("click", async () 
     docPDF.text(`Relatório de Visitas - ${nomeEmpresa}`, 10, 20);
     docPDF.setFontSize(11);
 
-    autoTable(docPDF, {
+    docPDF.autoTable({
       startY: 30,
       head: [['#', 'Data/Hora', 'Serviço', 'Local', 'Técnico']],
       body: visitas.map((v, i) => [
@@ -326,6 +327,7 @@ async function nomeEmpresaPorId(id) {
   const snap = await getDoc(doc(db, "empresas", id));
   return snap.exists() ? snap.data().nome : "";
 }
+
 
 
 
