@@ -24,7 +24,6 @@ export async function gerarPDFVisita(visita, fotosAdicionais = [], logoEmpresaUr
   const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
   let y = 15;
 
-  // Cabeçalho com logo (opcional)
   if (logoEmpresaUrl) {
     try {
       const logo = await imageUrlToDataUrl(logoEmpresaUrl);
@@ -55,7 +54,6 @@ export async function gerarPDFVisita(visita, fotosAdicionais = [], logoEmpresaUr
   doc.line(10, y, 200, y);
   y += 6;
 
-  // Fotos
   doc.setFont("helvetica", "bold");
   doc.text("Registro Fotográfico", 10, y);
   y += 8;
@@ -69,7 +67,6 @@ export async function gerarPDFVisita(visita, fotosAdicionais = [], logoEmpresaUr
     }
   };
 
-  // Foto principal
   if (visita.fotoURL) {
     try {
       addPageIfNeeded(70);
@@ -81,7 +78,6 @@ export async function gerarPDFVisita(visita, fotosAdicionais = [], logoEmpresaUr
     } catch {}
   }
 
-  // Fotos adicionais
   if (fotosAdicionais.length) {
     doc.setFont("helvetica", "bold");
     doc.text("Fotos adicionais:", 10, y);
@@ -102,7 +98,6 @@ export async function gerarPDFVisita(visita, fotosAdicionais = [], logoEmpresaUr
     if (col === 1) y += h + 8;
   }
 
-  // Rodapé
   const pageH = doc.internal.pageSize.getHeight();
   doc.setFontSize(9);
   doc.setTextColor(120);
@@ -112,8 +107,8 @@ export async function gerarPDFVisita(visita, fotosAdicionais = [], logoEmpresaUr
 }
 
 export async function uploadPDFToCloudinary(pdfBlob, filename, cloudName) {
-  const uploadPreset = "visitas_pdfs_não assinados"; // nome exato do preset
-  const folder = "visitas_pdfs"; // pasta correta
+  const uploadPreset = "visits_pdfs_unsigned";
+  const folder = "visits_pdfs";
 
   const formData = new FormData();
   formData.append("file", pdfBlob, filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
