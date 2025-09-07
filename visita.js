@@ -98,7 +98,7 @@ export function initVisitaForm(db) {
       };
       const pdfBlob = await gerarPDFVisita(visitaPlain, fotosAdicionais);
 
-      // 5) Upload do PDF (corrigido)
+      // 5) Upload do PDF
       const filename = `visita_${visitaRef.id}_${Date.now()}`;
       const pdfURL = await uploadPDFToCloudinary(
         pdfBlob,
