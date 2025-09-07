@@ -192,7 +192,8 @@ document.getElementById("btnGerarRelatorio").addEventListener("click", async () 
   if (!visitas.length) return alert("Nenhuma visita no período.");
 
   try {
-    const { jsPDF } = await import("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
+    await import("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
+    const { jsPDF } = window.jspdf;
     const { default: autoTable } = await import("https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js");
 
     const docPDF = new jsPDF();
@@ -305,4 +306,5 @@ async function nomeEmpresaPorId(id) {
   const snap = await getDoc(doc(db, "empresas", id));
   return snap.exists() ? snap.data().nome : "";
 }
+
 
