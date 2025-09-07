@@ -171,8 +171,20 @@ document.getElementById("btnGerarRelatorio").addEventListener("click", async () 
   const dataInicio = document.getElementById("dataInicio").value;
   const dataFim    = document.getElementById("dataFim").value;
 
-  if (!empresaSel)           return alert("Selecione a empresa.");
-  if (!dataInicio || !dataFim) return alert("Informe o período.");
+  if (!empresaSel) {
+    alert("Selecione a empresa.");
+    return;
+  }
+
+  if (!dataInicio || !dataFim) {
+    alert("Informe o período.");
+    return;
+  }
+
+  // Ajusta intervalo de datas para incluir todo o dia final
+  const inicio = new Date(dataInicio);
+  const fim = new Date(dataFim);
+  fim.setHours(23, 59, 59, 999);
 
   // Busca visitas no período
   const visitas = [];
@@ -184,22 +196,29 @@ document.getElementById("btnGerarRelatorio").addEventListener("click", async () 
   snapVisitas.forEach(docSnap => {
     const v = docSnap.data();
     const dt = v.dataHora.toDate ? v.dataHora.toDate() : new Date(v.dataHora);
-    if (dt >= new Date(dataInicio) && dt <= new Date(dataFim)) {
+    if (dt >= inicio && dt <= fim) {
       visitas.push(v);
     }
   });
 
-  if (!visitas.length) return alert("Nenhuma visita no período.");
+  if (!visitas.length) {
+    alert("Nenhuma visita no período.");
+    return;
+  }
 
   try {
+    // Importa jsPDF e autoTable
     await import("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
     const { jsPDF } = window.jspdf;
     const { default: autoTable } = await import("https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.28/dist/jspdf.plugin.autotable.min.js");
 
+    // Gera PDF
     const docPDF = new jsPDF();
     docPDF.setFontSize(16);
-    docPDF.text(`Relatório de Visitas - ${await nomeEmpresaPorId(empresaSel)}`, 10, 20);
+    const nomeEmpresa = await nomeEmpresaPorId(empresaSel);
+    docPDF.text(`Relatório de Visitas - ${nomeEmpresa}`, 10, 20);
     docPDF.setFontSize(11);
+
     autoTable(docPDF, {
       startY: 30,
       head: [['#', 'Data/Hora', 'Serviço', 'Local', 'Técnico']],
@@ -238,6 +257,7 @@ document.getElementById("btnGerarRelatorio").addEventListener("click", async () 
     alert("Erro ao gerar relatório: " + err.message);
   }
 });
+
 
 // Funções auxiliares
 
@@ -306,5 +326,6 @@ async function nomeEmpresaPorId(id) {
   const snap = await getDoc(doc(db, "empresas", id));
   return snap.exists() ? snap.data().nome : "";
 }
+
 
 
