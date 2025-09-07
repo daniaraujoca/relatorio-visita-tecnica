@@ -2,9 +2,8 @@
 // Geração de PDF (jsPDF) e upload de PDF (Cloudinary raw)
 
 export async function ensureJsPDF() {
-  if (!window.jsPDF) {
-    const mod = await import("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.es.min.js");
-    window.jsPDF = mod.jsPDF;
+  if (!window.jspdf) {
+    await import("https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js");
   }
 }
 
@@ -22,7 +21,7 @@ export async function imageUrlToDataUrl(url) {
 
 export async function gerarPDFVisita(visita, fotosAdicionais = [], logoEmpresaUrl = null) {
   await ensureJsPDF();
-  const doc = new window.jsPDF({ unit: "mm", format: "a4" });
+  const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
   let y = 15;
 
   // Cabeçalho com logo (opcional)
@@ -112,13 +111,12 @@ export async function gerarPDFVisita(visita, fotosAdicionais = [], logoEmpresaUr
   return doc.output("blob");
 }
 
-export async function uploadPDFToCloudinary(pdfBlob, filename, cloudName, uploadPreset, folder = "visits_pdfs") {
+export async function uploadPDFToCloudinary(pdfBlob, filename, cloudName, uploadPreset, folder = "visitas_pdfs") {
   const formData = new FormData();
   formData.append("file", pdfBlob, filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
   formData.append("upload_preset", uploadPreset);
   if (folder) formData.append("folder", folder);
 
-  // resource_type = raw → usando endpoint /raw/upload
   const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
   const resp = await fetch(uploadUrl, { method: "POST", body: formData });
   if (!resp.ok) throw new Error(await resp.text());
