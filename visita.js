@@ -8,7 +8,7 @@ import { gerarPDFVisita, uploadPDFToCloudinary } from "./pdf-utils.js";
 const CLOUDINARY_CLOUD_NAME = "dehekhogh";
 const CLOUDINARY_UPLOAD_PRESET_IMG = "visitas_unsigned";
 const CLOUDINARY_UPLOAD_FOLDER_IMG = "visitas";
-const CLOUDINARY_UPLOAD_PRESET_PDF = "visits_pdfs_unsigned";
+const CLOUDINARY_UPLOAD_PRESET_PDF = "visitas_pdfs_não assinados";
 const CLOUDINARY_UPLOAD_FOLDER_PDF = "visits_pdfs";
 
 export function initVisitaForm(db) {
@@ -184,3 +184,4 @@ async function buscarFotosAdicionaisDaVisita(db, filtro) {
   const snap = await getDocs(q);
   return snap.docs.map(d => d.data());
 }
+
