@@ -111,15 +111,23 @@ export async function gerarPDFVisita(visita, fotosAdicionais = [], logoEmpresaUr
   return doc.output("blob");
 }
 
-export async function uploadPDFToCloudinary(pdfBlob, filename, cloudName, uploadPreset, folder = "visitas_pdfs") {
+export async function uploadPDFToCloudinary(pdfBlob, filename, cloudName) {
+  const uploadPreset = "visitas_pdfs_não assinados"; // nome exato do preset
+  const folder = "visitas_pdfs"; // pasta correta
+
   const formData = new FormData();
   formData.append("file", pdfBlob, filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
   formData.append("upload_preset", uploadPreset);
-  if (folder) formData.append("folder", folder);
+  formData.append("folder", folder);
 
   const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`;
   const resp = await fetch(uploadUrl, { method: "POST", body: formData });
-  if (!resp.ok) throw new Error(await resp.text());
+
+  if (!resp.ok) {
+    const erro = await resp.text();
+    throw new Error(`Erro no upload: ${erro}`);
+  }
+
   const data = await resp.json();
   return data.secure_url;
 }
