@@ -1,18 +1,43 @@
-// visita.js
-import { collection, addDoc, Timestamp, doc, updateDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js";
+import { collection, addDoc, Timestamp, doc, updateDoc, getDocs, getDoc, query, where } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-auth.js";
+import { auth } from "./firebaseConfig.js";
 import { gerarPDFVisita, uploadPDFToCloudinary } from "./pdf-utils.js";
 
-// Cloudinary — seu cloud name aplicado
+// Cloudinary
 const CLOUDINARY_CLOUD_NAME = "dehekhogh";
-const CLOUDINARY_UPLOAD_PRESET_IMG = "visitas_unsigned";        // preset de imagens
-const CLOUDINARY_UPLOAD_FOLDER_IMG = "visitas";                // pasta de imagens
-const CLOUDINARY_UPLOAD_PRESET_PDF = "visits_pdfs_unsigned";   // preset de PDFs
-const CLOUDINARY_UPLOAD_FOLDER_PDF = "visits_pdfs";            // pasta de PDFs
+const CLOUDINARY_UPLOAD_PRESET_IMG = "visitas_unsigned";
+const CLOUDINARY_UPLOAD_FOLDER_IMG = "visitas";
+const CLOUDINARY_UPLOAD_PRESET_PDF = "visits_pdfs_unsigned";
+const CLOUDINARY_UPLOAD_FOLDER_PDF = "visits_pdfs";
 
 export function initVisitaForm(db) {
   const form = document.getElementById('visitaForm');
   const btnSalvar = document.getElementById('btnSalvar');
   const msgSucesso = document.getElementById('mensagemSucesso');
+  const nomeTecnicoInput = document.getElementById('nomeTecnico');
+
+  // 🔹 Garante dados do técnico e empresa antes de permitir salvar
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const snap = await getDoc(doc(db, "usuarios", user.uid));
+      if (snap.exists()) {
+        const dados = snap.data();
+        localStorage.setItem("usuarioId", user.uid);
+        localStorage.setItem("empresaId", dados.empresaId || "");
+        localStorage.setItem("nomeEmpresa", dados.nomeEmpresa || "");
+        if (!nomeTecnicoInput.value) {
+          nomeTecnicoInput.value = dados.nome || "";
+        }
+        nomeTecnicoInput.disabled = false;
+      } else {
+        alert("Perfil de usuário não encontrado. Faça login novamente.");
+        window.location.href = "login.html";
+      }
+    } else {
+      alert("Sessão expirada. Faça login novamente.");
+      window.location.href = "login.html";
+    }
+  });
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -23,7 +48,7 @@ export function initVisitaForm(db) {
     const foto = document.getElementById('fotoLocal').files[0];
     const tipoServico = document.getElementById('tipoServico').value;
     const nomeLocal = document.getElementById('nomeLocal').value.trim();
-    const nomeTecnico = document.getElementById('nomeTecnico').value.trim();
+    const nomeTecnico = nomeTecnicoInput.value.trim();
     const endereco = document.getElementById('endereco').value.trim();
     const dataHora = document.getElementById('dataHora').value;
 
@@ -46,10 +71,10 @@ export function initVisitaForm(db) {
       btnSalvar.disabled = true;
       btnSalvar.textContent = "Salvando...";
 
-      // 1) Upload da foto principal → Cloudinary (image/upload)
+      // 1) Upload da foto principal
       const fotoURL = await uploadImagemCloudinary(foto);
 
-      // 2) Salvar visita (sem PDF ainda)
+      // 2) Salvar visita
       const visitaRef = await addDoc(collection(db, "visitas"), {
         empresaId,
         tecnicoId,
@@ -63,7 +88,7 @@ export function initVisitaForm(db) {
         pdfURL: null
       });
 
-      // 3) Buscar fotos adicionais (por composição de campos)
+      // 3) Buscar fotos adicionais
       const fotosAdicionais = await buscarFotosAdicionaisDaVisita(db, {
         empresaId, nomeLocal, nomeTecnico, endereco, dataHora
       });
@@ -81,7 +106,7 @@ export function initVisitaForm(db) {
       };
       const pdfBlob = await gerarPDFVisita(visitaPlain, fotosAdicionais);
 
-      // 5) Upload do PDF (raw/upload)
+      // 5) Upload do PDF
       const filename = `visita_${visitaRef.id}_${Date.now()}`;
       const pdfURL = await uploadPDFToCloudinary(
         pdfBlob,
@@ -100,16 +125,15 @@ export function initVisitaForm(db) {
       // 7) Feedback
       msgSucesso.style.display = 'block';
       form.reset();
-      // Repor data/hora atual
       const agora = new Date();
       document.getElementById('dataHora').value =
         `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}-${String(agora.getDate()).padStart(2, '0')}T${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}`;
 
-      // 8) Download imediato (opcional)
+      // 8) Download imediato
       const baixarAgora = confirm("Relatório PDF gerado. Deseja baixar agora?");
       if (baixarAgora) window.open(pdfURL, "_blank");
 
-      // 9) Persistir dados-chave para fotos.html
+      // 9) Persistir dados-chave
       localStorage.setItem('tipoServico', tipoServico);
       localStorage.setItem('nomeLocal', nomeLocal);
       localStorage.setItem('nomeTecnico', nomeTecnico);
@@ -132,7 +156,6 @@ export function initVisitaForm(db) {
 }
 
 async function uploadImagemCloudinary(file) {
-  // Validação simples
   const maxMB = 8;
   if (file.size > maxMB * 1024 * 1024) throw new Error(`Imagem acima de ${maxMB} MB.`);
 
@@ -161,5 +184,5 @@ async function buscarFotosAdicionaisDaVisita(db, { empresaId, nomeLocal, nomeTec
     where("dataHora", "==", Timestamp.fromDate(new Date(dataHora)))
   );
   const snap = await getDocs(q);
-  return snap.docs.map(d => d.data()); // [{ fotoURL, ... }]
+  return snap.docs.map(d => d.data());
 }
