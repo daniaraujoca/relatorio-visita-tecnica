@@ -2,97 +2,541 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Painel Administrativo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0070f3">
+  <title>Admin - Eco GLP</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
 </head>
+
 <body>
-  <header>
-    <h1>Painel Administrativo</h1>
-    <div class="user-info">
-      <span id="userRole"></span>
-      <button id="btnLogout">Sair</button>
+  <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="closeSidebarMenu()" aria-hidden="true"></div>
+  <div class="app-shell">
+    <aside id="appSidebar" class="app-sidebar" aria-label="Menu principal">
+      <div class="sidebar-header">
+        <div class="sidebar-brand-mark">E</div>
+        <div>
+          <strong>Eco GLP</strong>
+          <span>Administrador</span>
+        </div>
+        <button type="button" class="sidebar-close" onclick="closeSidebarMenu()" aria-label="Fechar menu">×</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button type="button" class="sidebar-nav-item" data-view="busca" onclick="showView('busca')">
+          <span class="sidebar-nav-icon">🔎</span>
+          <span class="sidebar-nav-label">Busca</span>
+        </button>
+        <button type="button" class="sidebar-nav-item" data-view="tecnicos" onclick="showView('tecnicos')">
+          <span class="sidebar-nav-icon">👷</span>
+          <span class="sidebar-nav-label">Técnicos</span>
+        </button>
+        <button type="button" class="sidebar-nav-item" data-view="empresas" onclick="showView('empresas')">
+          <span class="sidebar-nav-icon">🏢</span>
+          <span class="sidebar-nav-label">Empresas</span>
+        </button>
+        <button type="button" class="sidebar-nav-item" data-view="locais" onclick="showView('locais')">
+          <span class="sidebar-nav-icon">📍</span>
+          <span class="sidebar-nav-label">Locais</span>
+        </button>
+        <button type="button" class="sidebar-nav-item" data-view="agendamentos" onclick="showView('agendamentos')">
+          <span class="sidebar-nav-icon">📅</span>
+          <span class="sidebar-nav-label">Agendamentos</span>
+        </button>
+        <button type="button" class="sidebar-nav-item" data-view="relatorios" onclick="showView('relatorios')">
+          <span class="sidebar-nav-icon">📄</span>
+          <span class="sidebar-nav-label">Relatórios</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span>Sistema interno Eco GLP</span>
+      </div>
+    </aside>
+
+    <main class="app-main">
+      <div class="container">
+    <!-- Navbar -->
+    <div class="navbar">
+      <div class="navbar-brand navbar-brand-with-menu">
+        <button type="button" class="mobile-menu-btn" onclick="toggleSidebarMenu()" aria-label="Abrir menu">☰</button>
+        <span>Eco GLP - Admin</span>
+      </div>
+      <div class="navbar-user">
+        <span class="navbar-username" id="userName"></span>
+        <button class="btn btn-secondary" onclick="handleLogout()">Sair</button>
+      </div>
     </div>
-  </header>
+<!-- VIEW: BUSCA AVANÇADA -->
+    <div id="viewBusca" class="view-section hidden">
+      <section class="advanced-search-card" aria-label="Busca avançada global">
+      <div class="advanced-search-header">
+        <div>
+          <span class="advanced-search-eyebrow">Busca global</span>
+          <h2 class="advanced-search-title">Pesquisar no sistema</h2>
+          <p class="advanced-search-subtitle">Busque por empresa, local, usuário/técnico, data, agendamento ou relatório.</p>
+        </div>
+        <div class="advanced-search-header-actions">
+          <button type="button" class="btn btn-secondary advanced-search-clear" onclick="resetAdvancedSearch()">Limpar</button>
+          <button type="button" class="btn btn-secondary advanced-search-back" onclick="showView(defaultDashboardView || 'relatorios')">Voltar</button>
+        </div>
+      </div>
 
-  <main>
-    <!-- Seção de gerenciamento de empresas (superadmin) -->
-    <section id="secEmpresas" style="display:none;">
-      <h2>Cadastro de Empresas</h2>
-      <form id="formEmpresa" novalidate>
-        <div class="form-group">
-          <label for="nomeEmpresa">Nome da Empresa</label>
-          <input type="text" id="nomeEmpresa" required>
+      <div class="advanced-search-grid">
+        <label class="advanced-field advanced-field-wide">
+          <span>Texto da busca</span>
+          <div class="advanced-input-icon-wrap">
+            <span class="advanced-input-icon">🔎</span>
+            <input type="search" id="globalSearch" class="form-input advanced-search-input" placeholder="Ex.: relatório Comercial Milano, teste, Handerson, 15/05/2026...">
+          </div>
+        </label>
+
+        <label class="advanced-field">
+          <span>Tipo</span>
+          <select id="searchType" class="form-select advanced-search-select" onchange="setSearchFilter(this.value)">
+            <option value="all">Todos</option>
+            <option value="usuarios">Usuários/Técnicos</option>
+            <option value="empresas">Empresas</option>
+            <option value="locais">Locais</option>
+            <option value="agendamentos">Agendamentos</option>
+            <option value="relatorios">Relatórios</option>
+          </select>
+        </label>
+
+        <label class="advanced-field">
+          <span>Empresa</span>
+          <input type="search" id="searchEmpresa" class="form-input" placeholder="Nome da empresa">
+        </label>
+
+        <label class="advanced-field">
+          <span>Local</span>
+          <input type="search" id="searchLocal" class="form-input" placeholder="Nome/endereço do local">
+        </label>
+
+        <label class="advanced-field">
+          <span>Usuário/Técnico</span>
+          <input type="search" id="searchUsuario" class="form-input" placeholder="Nome ou e-mail">
+        </label>
+
+        <label class="advanced-field">
+          <span>Data inicial</span>
+          <input type="date" id="searchDateFrom" class="form-input">
+        </label>
+
+        <label class="advanced-field">
+          <span>Data final</span>
+          <input type="date" id="searchDateTo" class="form-input">
+        </label>
+      </div>
+
+      <div class="advanced-search-actions">
+        <div class="global-search-filters" role="group" aria-label="Filtros rápidos de pesquisa">
+          <button class="filter-btn active" data-filter="all" onclick="setSearchFilter('all')">Todos</button>
+          <button class="filter-btn" data-filter="usuarios" onclick="setSearchFilter('usuarios')">Usuários</button>
+          <button class="filter-btn" data-filter="empresas" onclick="setSearchFilter('empresas')">Empresas</button>
+          <button class="filter-btn" data-filter="locais" onclick="setSearchFilter('locais')">Locais</button>
+          <button class="filter-btn" data-filter="agendamentos" onclick="setSearchFilter('agendamentos')">Agendamentos</button>
+          <button class="filter-btn" data-filter="relatorios" onclick="setSearchFilter('relatorios')">Relatórios</button>
         </div>
-        <div class="form-group">
-          <label for="cnpjEmpresa">CNPJ</label>
-          <input type="text" id="cnpjEmpresa">
-        </div>
-        <button type="submit">Salvar Empresa</button>
-      </form>
-      <div id="listaEmpresas"></div>
+
+        <button type="button" class="btn btn-primary advanced-search-button" onclick="executeAdvancedSearch()">Buscar</button>
+      </div>
+
+      <div id="searchResults" class="advanced-search-summary" hidden>
+        <strong id="searchCount">0</strong> resultado(s) encontrado(s)
+      </div>
+
+      <div id="advancedSearchResults" class="advanced-results-list" hidden></div>
     </section>
+    </div>
 
-    <!-- Seção de gerenciamento de usuários (admin_empresa & superadmin) -->
-    <section id="secUsuarios" style="display:none;">
-      <h2>Cadastro de Usuários</h2>
-      <form id="formUsuario" novalidate>
+<!-- VIEW: TÉCNICOS -->
+    <div id="viewTecnicos" class="view-section hidden">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Gerenciar Técnicos</h2>
+          <button class="btn btn-success" onclick="showModalNovoTecnico()">+ Novo Técnico</button>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tecnicosTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: EMPRESAS -->
+    <div id="viewEmpresas" class="view-section hidden">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Gerenciar Empresas</h2>
+          <button class="btn btn-success" onclick="showModalNovaEmpresa()">+ Nova Empresa</button>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Data de Cadastro</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="empresasTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: LOCAIS -->
+    <div id="viewLocais" class="view-section hidden">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Gerenciar Locais</h2>
+          <button class="btn btn-success" onclick="showModalNovoLocal()">+ Novo Local</button>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Empresa</th>
+                <th>Local</th>
+                <th>Endereço</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="locaisTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: AGENDAMENTOS -->
+    <div id="viewAgendamentos" class="view-section hidden">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Gerenciar Agendamentos</h2>
+          <button class="btn btn-success" onclick="showModalNovoAgendamento()">+ Novo Agendamento</button>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Empresa</th>
+                <th>Local</th>
+                <th>Técnico</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="agendamentosTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: RELATÓRIOS -->
+    <div id="viewRelatorios" class="view-section hidden">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Todos os Relatórios</h2>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Empresa</th>
+                <th>Local</th>
+                <th>Técnico</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="relatoriosTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Novo Técnico -->
+  <div id="modalTecnico" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTecnicoTitle">Novo Técnico</h3>
+        <button class="modal-close" onclick="closeModal('modalTecnico')">&times;</button>
+      </div>
+      <form id="formTecnico">
         <div class="form-group">
-          <label for="nomeUsuario">Nome</label>
-          <input type="text" id="nomeUsuario" required>
+          <label class="form-label">Nome Completo</label>
+          <input type="text" id="tecnicoNome" class="form-input" required>
         </div>
         <div class="form-group">
-          <label for="emailUsuario">E-mail</label>
-          <input type="email" id="emailUsuario" required>
+          <label class="form-label">Telefone</label>
+          <input type="tel" id="tecnicoTelefone" class="form-input" placeholder="(00) 00000-0000">
         </div>
         <div class="form-group">
-          <label for="senhaUsuario">Senha</label>
-          <input type="password" id="senhaUsuario" required>
+          <label class="form-label">Email</label>
+          <input type="email" id="tecnicoEmail" class="form-input" required>
         </div>
         <div class="form-group">
-          <label for="roleUsuario">Função</label>
-          <select id="roleUsuario" required>
-            <option value="">Selecione</option>
-            <option value="admin_empresa">Admin da Empresa</option>
-            <option value="tecnico">Técnico</option>
+          <label class="form-label">Senha</label>
+          <input type="password" id="tecnicoSenha" class="form-input" required minlength="6">
+        </div>
+        <div class="btn-group">
+          <button type="submit" class="btn btn-success">Salvar</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalTecnico')">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Nova/Editar Empresa -->
+  <div id="modalEmpresa" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalEmpresaTitle">Nova Empresa</h3>
+        <button class="modal-close" onclick="closeModal('modalEmpresa')">&times;</button>
+      </div>
+      <form id="formEmpresa">
+        <input type="hidden" id="empresaId">
+        <div class="form-group">
+          <label class="form-label">Nome da Empresa *</label>
+          <input type="text" id="empresaNome" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">CNPJ</label>
+          <input type="text" id="empresaCnpj" class="form-input" placeholder="00.000.000/0000-00" maxlength="18">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Endereço</label>
+          <textarea id="empresaEndereco" class="form-input" rows="2" placeholder="Rua, número, bairro, cidade - UF"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Telefone</label>
+          <input type="tel" id="empresaTelefone" class="form-input" placeholder="(00) 00000-0000" maxlength="15">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Responsável</label>
+          <input type="text" id="empresaResponsavel" class="form-input" placeholder="Nome do responsável">
+        </div>
+        <div class="btn-group">
+          <button type="submit" class="btn btn-success">Salvar</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalEmpresa')">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Novo/Editar Local -->
+  <div id="modalLocal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalLocalTitle">Novo Local</h3>
+        <button class="modal-close" onclick="closeModal('modalLocal')">&times;</button>
+      </div>
+      <form id="formLocal">
+        <input type="hidden" id="localId">
+        <div class="form-group">
+          <label class="form-label">Empresa *</label>
+          <select id="localEmpresaId" class="form-select" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nome do Local *</label>
+          <input type="text" id="localNome" class="form-input" required placeholder="Ex: Unidade Centro">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo do Local</label>
+          <select id="localTipo" class="form-select">
+            <option value="">Selecione...</option>
+            <option value="escola">Escola</option>
+            <option value="restaurante">Restaurante</option>
+            <option value="industria">Indústria</option>
+            <option value="condominio">Condomínio</option>
+            <option value="hospital">Hospital</option>
+            <option value="hotel">Hotel</option>
+            <option value="comercio">Comércio</option>
+            <option value="residencia">Residência</option>
+            <option value="outro">Outro</option>
           </select>
         </div>
-        <div id="empresaSelectContainer" class="form-group" style="display:none;">
-          <label for="empresaUsuario">Empresa</label>
-          <select id="empresaUsuario"></select>
+        <div class="form-group">
+          <label class="form-label">Endereço Completo *</label>
+          <textarea id="localEndereco" class="form-input" rows="2" required placeholder="Rua, número, bairro, cidade - UF"></textarea>
         </div>
-        <button type="submit">Salvar Usuário</button>
+        <div class="form-group">
+          <label class="form-label">Telefone</label>
+          <input type="tel" id="localTelefone" class="form-input" placeholder="(00) 00000-0000" maxlength="15">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Responsável</label>
+          <input type="text" id="localResponsavel" class="form-input" placeholder="Nome do responsável no local">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Horário de Funcionamento</label>
+          <input type="text" id="localHorario" class="form-input" placeholder="Ex: Segunda a Sexta, 8h às 18h">
+        </div>
+        <div class="btn-group">
+          <button type="submit" class="btn btn-success">Salvar</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalLocal')">Cancelar</button>
+        </div>
       </form>
+    </div>
+  </div>
 
-      <div id="loadingUsuarios" class="loading" style="display:none;">Carregando usuários...</div>
-      <div id="listaUsuarios"></div>
-    </section>
-
-    <!-- Seção de relatórios (admin_empresa & superadmin) -->
-    <section id="secRelatorios" style="display:none;">
-      <h2>Relatórios</h2>
-      <div class="form-group">
-        <label for="relatorioEmpresa">Empresa</label>
-        <select id="relatorioEmpresa"></select>
+  <!-- MODAL: Novo/Editar Agendamento -->
+  <div id="modalAgendamento" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalAgendamentoTitle">Novo Agendamento</h3>
+        <button class="modal-close" onclick="closeModal('modalAgendamento')">&times;</button>
       </div>
-      <div class="form-group">
-        <label for="dataInicio">Data Início</label>
-        <input type="date" id="dataInicio">
+      <form id="formAgendamento">
+        <input type="hidden" id="agendamentoId">
+        <div class="form-group">
+          <label class="form-label">Empresa</label>
+          <select id="agendamentoEmpresaId" class="form-select" required onchange="loadLocaisForAgendamento()"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Local</label>
+          <select id="agendamentoLocalId" class="form-select" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Técnico</label>
+          <select id="agendamentoTecnicoId" class="form-select" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data e Hora</label>
+          <input type="datetime-local" id="agendamentoData" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select id="agendamentoStatus" class="form-select" required>
+            <option value="pendente">Pendente</option>
+            <option value="concluido">Concluído</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+        <div class="btn-group">
+          <button type="submit" class="btn btn-success">Salvar</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalAgendamento')">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modalRelatorioEdicao" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalRelatorioEdicaoTitle">Editar Relatório</h3>
+        <button class="modal-close" onclick="closeModal('modalRelatorioEdicao')">&times;</button>
       </div>
-      <div class="form-group">
-        <label for="dataFim">Data Fim</label>
-        <input type="date" id="dataFim">
+      <form id="formRelatorioEdicao">
+        <input type="hidden" id="relatorioIdEdicao">
+        
+        <div class="form-group">
+          <label class="form-label">Data e Hora da Visita</label>
+          <input type="datetime-local" id="relatorioDataVisitaEdicao" class="form-input" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Técnico Responsável</label>
+          <input type="text" id="relatorioTecnicoNomeEdicao" class="form-input" disabled>
+        </div>
+        
+        <hr style="margin: 20px 0;">
+        
+        <div class="form-group">
+          <label class="form-label">Descrição do Serviço / Problema Encontrado *</label>
+          <textarea id="relatorioDescricaoEdicao" class="form-input" rows="4" required></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Ações Corretivas Realizadas *</label>
+          <textarea id="relatorioAcoesEdicao" class="form-input" rows="4" required></textarea>
+        </div>
+        
+        <div class="btn-group">
+          <button type="submit" class="btn btn-success">Salvar Alterações</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalRelatorioEdicao')">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Estilos dos Modais -->
+  <style>
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--light-bg);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+
+    .modal-close:hover {
+      color: var(--danger-color);
+    }
+  </style>
+
       </div>
-      <button id="btnGerarRelatorio">Gerar Relatório PDF</button>
+    </main>
+  </div>
 
-      <!-- Contêiner para visualização embutida do PDF -->
-      <div id="relatorioContainer" style="margin-top: 30px;"></div>
-    </section>
-    <section id="relatorioContainer"></section>
+  <!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/utils.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/pdf-generator.js"></script>
+<script src="js/dashboard-admin.js"></script>
 
-  </main>
-
-  <script type="module" src="admin.js"></script>
 </body>
 </html>
-
